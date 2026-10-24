@@ -46,8 +46,8 @@ extension:
 
 1. `server`, when it is set;
 2. `build/lucid.dream` (or `build-dream/bin/lucid.dream`) under the project
-   root -- so the Dream checkout runs the server it just built, not an
-   installed one;
+   root, when that root is one `trusted` names -- so the Dream checkout runs
+   the server it just built, not an installed one;
 3. `$LUCID_IMAGE`;
 4. `$MINDV2_PATH/lucid.dream`;
 5. wherever the VM says the installation is (`dream --mindv2-path`), which
@@ -58,6 +58,13 @@ When the image is the project's own build and `build-dream/bin/dream` is
 beside it, that VM runs it rather than the one on `PATH` (unless `vm` is set):
 an image built from the checkout can name builtins an installed VM does not
 have yet, and fails with `unknown builtin id`.
+
+**A project's own builds run only if you trust it.** They are programs the
+project supplies -- a cloned repository can put anything at
+`build-dream/bin/dream` -- and opening one of its files must not run them. So
+steps 2 and the VM beside it apply only to a root listed in `trusted`; the
+Dream checkout is the usual one:
+`require('dream').setup({ trusted = { '~/src/dream' } })`.
 
 **The project root** is the outermost `mind.toml` that declares a
 `[workspace]`, then the nearest `mind.toml`, then the repository, then the
@@ -78,6 +85,7 @@ require('dream').setup({
   server = nil,           -- the lucid.dream to run; found as above when nil
   package_paths = {},     -- extra package roots, passed as -L
   stdlib = nil,           -- the directory holding std; nil leaves it to the server
+  trusted = {},           -- project roots whose own builds may be run
   autostart = true,       -- start for every Dream buffer
   lsp = {},               -- merged into the vim.lsp.start config: on_attach, capabilities, ...
 })

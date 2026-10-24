@@ -27,6 +27,9 @@ function M.check()
   end)
   local root = buf and dream.root(buf) or vim.uv.cwd()
   h.info('project root' .. (buf and (' for ' .. vim.api.nvim_buf_get_name(buf)) or '') .. ': ' .. root)
+  if not dream.trusted(root) then
+    h.info('this project is not in `trusted`, so a server or VM it built is not used')
+  end
   local server = dream.find_server(root)
   if server then
     h.ok('image: ' .. server)

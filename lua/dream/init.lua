@@ -20,6 +20,12 @@ local defaults = {
   -- The directory holding `std`. Nil leaves it to the server, which reads
   -- `$MIND_STDLIB` and then the installation.
   stdlib = nil,
+  -- Projects whose own builds may be run: a `build/lucid.dream` and a
+  -- `build-dream/bin/dream` inside one of these roots is used before the
+  -- installation's. Anywhere else they are not, because a project is what a
+  -- clone brings, and opening one of its files would run a program it
+  -- supplied. The Dream checkout is the usual entry: { '~/src/dream' }.
+  trusted = {},
   -- Start the server for every Dream buffer. False leaves it to the caller,
   -- through `require('dream').start()`.
   autostart = true,
@@ -86,13 +92,24 @@ end
 --- the VM says its installation is -- which finds it even when the editor was
 --- not started with `$MINDV2_PATH` set, as under the Nix flake's wrapped
 --- `dream`.
+--- Whether a project's own builds may be run: its root is one `trusted` names.
+function M.trusted(root)
+  if not root then return false end
+  local real = vim.uv.fs_realpath(root) or root
+  for _, t in ipairs(M.config.trusted or {}) do
+    local want = expand(t)
+    if (vim.uv.fs_realpath(want) or want) == real then return true end
+  end
+  return false
+end
+
 function M.find_server(root)
   local cfg = M.config
   local configured = expand(cfg.server)
   if exists(configured) then return configured end
 
   local candidates = {}
-  if root then
+  if root and M.trusted(root) then
     table.insert(candidates, vim.fs.joinpath(root, 'build', 'lucid.dream'))
     table.insert(candidates, vim.fs.joinpath(root, 'build-dream', 'bin', 'lucid.dream'))
   end
@@ -140,7 +157,7 @@ function M.cmd(root)
   -- the project has built a VM beside it, that VM runs it, unless `vm` was set.
   local vm = expand(cfg.vm) or 'dream'
   local local_vm = root and vim.fs.joinpath(root, 'build-dream', 'bin', 'dream')
-  if vm == defaults.vm and root and vim.startswith(server, root .. '/')
+  if vm == defaults.vm and root and M.trusted(root) and vim.startswith(server, root .. '/')
       and local_vm and vim.fn.executable(local_vm) == 1 then
     vm = local_vm
   end

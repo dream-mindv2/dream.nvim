@@ -43,9 +43,18 @@ vim.fn.writefile({
 -- ftdetect/ are sourced, so do here what startup would have.
 vim.cmd('runtime! plugin/dream.lua')
 vim.cmd('runtime! ftdetect/dream.lua')
+-- A project's own build is a program it supplies, run only when its root is
+-- trusted: not trusted, the checkout's build is not the server chosen.
+require('dream').setup({ vm = vim.env.DREAM or 'dream' })
+assert(require('dream').find_server(root) ~= root .. '/build/lucid.dream',
+  'an untrusted project had its own build chosen as the server')
+require('dream').setup({ vm = vim.env.DREAM or 'dream', trusted = { root } })
+assert(require('dream').find_server(root) == root .. '/build/lucid.dream',
+  'a trusted project did not have its own build chosen')
 require('dream').setup({
   vm = vim.env.DREAM or 'dream',
   server = root .. '/build/lucid.dream',
+  trusted = { root },
   stdlib = root .. '/mind',
 })
 
