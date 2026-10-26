@@ -229,4 +229,33 @@ function M.stop()
   for _, c in ipairs(clients()) do c:stop() end
 end
 
+--- The toolchain `~/.mindv2/current` points at ($MINDV2_HOME), or nil.
+local function current_toolchain(home)
+  local link = vim.uv.fs_readlink(vim.fs.joinpath(home, 'current'))
+  return link and vim.fs.basename(link) or nil
+end
+
+--- A server is an image of one toolchain's lucid, and `mind toolchain use`
+--- moves `current` to another: the running server would go on answering for
+--- the old language until `:DreamRestart`. So the link is watched, and a change
+--- restarts every lucid, which then finds the new toolchain's.
+function M.watch_toolchain()
+  local home = expand(vim.env.MINDV2_HOME) or vim.fs.joinpath(vim.uv.os_homedir(), '.mindv2')
+  if not vim.uv.fs_stat(home) then return end
+  local last = current_toolchain(home)
+  local handle = vim.uv.new_fs_event()
+  if not handle then return end
+  handle:start(home, {}, vim.schedule_wrap(function(err, file)
+    if err or file ~= 'current' then return end
+    local now = current_toolchain(home)
+    if now == last then return end
+    last = now
+    if #clients() > 0 then
+      M.restart()
+      vim.notify('dream: toolchain ' .. (now or 'changed') .. '; lucid was restarted', vim.log.levels.INFO)
+    end
+  end))
+  M._toolchain_watch = handle
+end
+
 return M

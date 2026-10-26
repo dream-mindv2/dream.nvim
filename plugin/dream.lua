@@ -27,6 +27,10 @@ vim.api.nvim_create_autocmd('BufWritePost', {
   end,
 })
 
+-- And so does switching toolchains: `mind toolchain use` moves
+-- ~/.mindv2/current, and the running lucid is the old one's image.
+require('dream').watch_toolchain()
+
 vim.api.nvim_create_user_command('DreamRestart', function() require('dream').restart() end,
   { desc = 'Restart the Dream language server' })
 vim.api.nvim_create_user_command('DreamStop', function() require('dream').stop() end,
