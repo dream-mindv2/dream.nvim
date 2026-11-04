@@ -36,6 +36,7 @@ syn keyword dreamKeyword when not expand
 syn match dreamException "\<try!"
 syn match dreamException "\<defer!"
 syn match dreamKeyword "\<comp!"
+syn match dreamKeyword "\<fn!"
 " Contextual: syntax only before a brace, and a function may still be called that.
 syn match dreamKeyword "\<receive!\ze\s*{"
 syn keyword dreamStorage priv rec virtual derive
