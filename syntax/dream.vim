@@ -84,6 +84,7 @@ syn region dreamNested start="{" end="}" contained transparent contains=@dreamCo
 syn match dreamNumber "\<\d[0-9_]*\>"
 syn match dreamNumber "\<0[xX][0-9A-Fa-f_]\+\>"
 syn match dreamNumber "\<0[bB][01_]\+\>"
+syn match dreamNumber "\<0[oO][0-7_]\+\>"
 syn match dreamFloat "\<\d[0-9_]*\.\d[0-9_]*\%([eE][-+]\?\d\+\)\?\>"
 
 " An atom is a colon and a name: :ok, :error. `::` is cons, and the lexer reads
