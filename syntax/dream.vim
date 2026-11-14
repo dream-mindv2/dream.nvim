@@ -32,7 +32,7 @@ syn keyword dreamBuiltin type_of to_string len
 " The parser's list (`keywords` in dreams/src/parser.dr), split by what each does.
 syn keyword dreamConditional if else match
 syn keyword dreamException catch
-syn keyword dreamKeyword when not expand
+syn keyword dreamKeyword when not expand in
 syn match dreamException "\<try!"
 syn match dreamException "\<defer!"
 syn match dreamKeyword "\<comp!"
@@ -76,7 +76,9 @@ syn match dreamChar "'\%(\\\%(u{\x\+}\|.\)\|[^'\\]\)'"
 
 " `$"..{expr}.."`: the braces hold code, which may itself hold braces.
 syn region dreamInterp matchgroup=dreamString start=+\$"+ skip=+\\.+ end=+"+
-      \ contains=dreamEscape,dreamInterpExpr
+      \ contains=dreamEscape,dreamInterpExpr,dreamInterpName
+" `$name` is `{name}`; `\$` is the escape's, which is tried first.
+syn match dreamInterpName "\$\h\w*" contained
 syn region dreamInterpExpr matchgroup=dreamInterpDelim start="{" end="}" contained
       \ contains=@dreamCode,dreamNested
 syn region dreamNested start="{" end="}" contained transparent contains=@dreamCode,dreamNested
@@ -131,6 +133,7 @@ hi def link dreamEscape      SpecialChar
 hi def link dreamString      String
 hi def link dreamInterp      String
 hi def link dreamInterpDelim Delimiter
+hi def link dreamInterpName  Identifier
 hi def link dreamChar        Character
 hi def link dreamNumber      Number
 hi def link dreamFloat       Float
